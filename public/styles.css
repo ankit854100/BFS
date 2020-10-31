@@ -2,8 +2,8 @@ body {
   text-align: center !important;
 }
 
-button {
-  margin-left: 10px !important;
+.customButton {
+  margin: 10px 5px !important;
 }
 
 #canvas {

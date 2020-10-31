@@ -10,7 +10,9 @@ import dimension, {
   createDestinations,
   factor,
   target,
-  start
+  start,
+  resetPath,
+  loadLevels
 } from "./Assets";
 import { Button } from "react-bootstrap";
 
@@ -19,6 +21,10 @@ let j = 0;
 // for calling createDestinations() just once
 let k = 0;
 let ctx;
+// animation request
+let myRequest;
+// level of the game
+let level = 1;
 
 export default function App() {
   const ref = useRef();
@@ -26,6 +32,7 @@ export default function App() {
   const [inputValue, setInputValue] = useState(0);
   const [h1Value, setH1Value] = useState("");
   const [playAgain, setPlayAgain] = useState(false);
+  const [h3Level, setH3Level] = useState(1);
 
   useEffect(() => {
     let canvas = ref.current;
@@ -68,7 +75,11 @@ export default function App() {
       mouse.y = tempY;
     });
 
-    if (k === 0) createDestinations();
+    // create destination and levels
+    if (k === 0) {
+      loadLevels(level);
+      createDestinations();
+    }
     main();
     k++;
   });
@@ -92,16 +103,17 @@ export default function App() {
       drawBlock(ctx, "lightgreen", target);
     }
 
-    requestAnimationFrame(main);
+    myRequest = requestAnimationFrame(main);
   }
 
   function handleSubmit() {
     if (inputValue.toString() === shortestPath.toString()) {
-      setH1Value("Congratulations you win!!");
+      // setH1Value("Congratulations you win!!");
       setState(false);
       setPlayAgain(true);
     } else {
       setH1Value("Your answer is wrong please try again!");
+      setInputValue(0);
     }
   }
 
@@ -113,11 +125,30 @@ export default function App() {
 
   function handlePlayAgain() {
     // document.location.reload();
+    cancelAnimationFrame(myRequest);
     ctx.clearRect(0, 0, dimension.w, dimension.h);
+    resetPath();
+    j = 0;
+    k = 0;
+    setInputValue(0);
+    setPlayAgain(false);
+    setH1Value(false);
+  }
+
+  function handleNext() {
+    if (level < 5) {
+      level++;
+    } else {
+      level = 1;
+    }
+    setH3Level(level);
+    // console.log("Level: ", level);
+    handlePlayAgain();
   }
 
   return (
     <div className="App">
+      <h3>Level: {h3Level}</h3>
       <canvas ref={ref} id="canvas"></canvas>
       {textInputState && (
         <div>
@@ -129,7 +160,12 @@ export default function App() {
             onChange={handleChange}
             autoComplete="off"
           ></input>
-          <Button variant="dark" size="sm" onClick={handleSubmit}>
+          <Button
+            variant="dark"
+            size="sm"
+            onClick={handleSubmit}
+            className="customButton"
+          >
             {" "}
             Submit{" "}
           </Button>
@@ -138,9 +174,23 @@ export default function App() {
       )}
       {playAgain && (
         <div>
-          <Button variant="dark" size="sm" onClick={handlePlayAgain}>
+          <Button
+            variant="dark"
+            size="sm"
+            onClick={handlePlayAgain}
+            className="customButton"
+          >
             {" "}
             Play Again{" "}
+          </Button>
+          <Button
+            variant="dark"
+            size="sm"
+            className="customButton"
+            onClick={handleNext}
+          >
+            {" "}
+            Next Level{" "}
           </Button>
         </div>
       )}
